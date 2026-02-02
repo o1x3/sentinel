@@ -26,7 +26,7 @@ struct SentinelApp: App {
                 } else if !appState.isUnlocked {
                     LockView()
                 } else {
-                    Text("Vault Placeholder") // Replaced in Phase 3
+                    MainTabView()
                 }
             }
             .environment(appState)

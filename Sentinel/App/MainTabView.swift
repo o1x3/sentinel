@@ -13,7 +13,7 @@ struct MainTabView: View {
                     Label("Codes", systemImage: "key.viewfinder")
                 }
 
-            Text("Settings Placeholder") // Replaced in Phase 7
+            SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gearshape")
                 }

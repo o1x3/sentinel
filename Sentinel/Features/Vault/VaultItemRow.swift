@@ -5,16 +5,7 @@ struct VaultItemRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            // Icon placeholder — replaced with ServiceIconView in Phase 7
-            ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.theme.accent.opacity(0.15))
-                    .frame(width: 40, height: 40)
-
-                Text(credential.name.prefix(1).uppercased())
-                    .font(.headline)
-                    .foregroundStyle(Color.theme.accent)
-            }
+            ServiceIconView(name: credential.name)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(credential.name)

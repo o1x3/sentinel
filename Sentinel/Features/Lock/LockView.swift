@@ -1,8 +1,10 @@
+import CryptoKit
 import SwiftUI
 
 struct LockView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = LockViewModel()
+    @State private var biometricsAvailable = false
 
     var body: some View {
         NavigationStack {
@@ -49,21 +51,44 @@ struct LockView: View {
                 .disabled(viewModel.isLoading || viewModel.password.isEmpty)
                 .padding(.horizontal)
 
-                // Biometric button — placeholder, enabled in Phase 6
-                Button {
-                    // TODO: Phase 6 — biometric unlock
-                } label: {
-                    Image(systemName: "faceid")
-                        .font(.title2)
-                        .foregroundStyle(Color.theme.accent)
+                if biometricsAvailable {
+                    Button {
+                        Task { await biometricUnlock() }
+                    } label: {
+                        Image(systemName: BiometricManager.biometricIconName)
+                            .font(.title2)
+                            .foregroundStyle(Color.theme.accent)
+                    }
                 }
-                .disabled(true)
-                .opacity(0.3)
 
                 Spacer()
             }
             .navigationTitle("Unlock")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                biometricsAvailable = BiometricManager.canUseBiometrics()
+                    && UserDefaults.standard.bool(forKey: "biometricEnabled")
+                if biometricsAvailable {
+                    Task { await biometricUnlock() }
+                }
+            }
+        }
+    }
+
+    private func biometricUnlock() async {
+        guard let context = await BiometricManager.authenticateForKeychain() else { return }
+
+        do {
+            guard let keyData = try KeychainService.shared.loadBiometricKey(context: context) else { return }
+            let key = SymmetricKey(data: keyData)
+
+            // Verify the key is correct
+            guard let verification = try KeychainService.shared.loadVerificationData(),
+                  VaultCrypto.verifyKey(key, against: verification) else { return }
+
+            appState.unlock(with: key)
+        } catch {
+            // Biometric unlock failed silently — user can still use password
         }
     }
 }

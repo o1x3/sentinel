@@ -3,6 +3,7 @@ import SwiftUI
 
 @main
 struct SentinelApp: App {
+    @Environment(\.scenePhase) private var scenePhase
     @State private var appState = AppState()
 
     var sharedModelContainer: ModelContainer = {
@@ -20,20 +21,41 @@ struct SentinelApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Group {
-                if appState.isFirstLaunch {
-                    SetupView()
-                } else if !appState.isUnlocked {
-                    LockView()
-                } else {
-                    MainTabView()
+            ZStack {
+                Group {
+                    if appState.isFirstLaunch {
+                        SetupView()
+                    } else if !appState.isUnlocked {
+                        LockView()
+                    } else {
+                        MainTabView()
+                    }
+                }
+                .environment(appState)
+                .onAppear {
+                    LockViewModel().checkFirstLaunch(appState: appState)
+                }
+
+                // Blur overlay when app is in background/app switcher
+                if appState.isObscured {
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
                 }
             }
-            .environment(appState)
-            .onAppear {
-                LockViewModel().checkFirstLaunch(appState: appState)
-            }
+            .animation(.easeInOut(duration: 0.2), value: appState.isObscured)
         }
         .modelContainer(sharedModelContainer)
+        .onChange(of: scenePhase) { _, newPhase in
+            switch newPhase {
+            case .background, .inactive:
+                appState.didEnterBackground()
+            case .active:
+                appState.willEnterForeground()
+            @unknown default:
+                break
+            }
+        }
     }
 }

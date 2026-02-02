@@ -8,7 +8,7 @@ struct MainTabView: View {
                     Label("Vault", systemImage: "lock.shield")
                 }
 
-            Text("TOTP Placeholder") // Replaced in Phase 4
+            TOTPListView()
                 .tabItem {
                     Label("Codes", systemImage: "key.viewfinder")
                 }

@@ -1,0 +1,26 @@
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Project-specific
+CLAUDE.md
+spec.md
+
+# Swift Package Manager
+.build/
+Packages/
+Package.resolved
+
+# Misc
+*.swp
+*~
+*.orig

@@ -135,8 +135,9 @@ struct CredentialEditView: View {
                 }
             }
             .sheet(isPresented: $showingGenerator) {
-                // Placeholder — wired to GeneratorView in Phase 5
-                Text("Generator coming soon")
+                GeneratorView { password in
+                    viewModel.password = password
+                }
             }
             .onAppear { loadIfEditing() }
         }

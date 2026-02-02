@@ -6,8 +6,6 @@ struct KeychainService {
 
     static let shared = KeychainService()
 
-    private let accessGroup = "com.o1x3.Sentinel.shared"
-
     // MARK: - Generic Save/Load/Delete
 
     /// Save data to keychain. Overwrites if the key already exists.
@@ -15,7 +13,6 @@ struct KeychainService {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: key,
-            kSecAttrAccessGroup as String: accessGroup,
         ]
 
         // Delete existing item first
@@ -35,7 +32,6 @@ struct KeychainService {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: key,
-            kSecAttrAccessGroup as String: accessGroup,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
         ]
@@ -58,7 +54,6 @@ struct KeychainService {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: key,
-            kSecAttrAccessGroup as String: accessGroup,
         ]
 
         let status = SecItemDelete(query as CFDictionary)
@@ -83,7 +78,6 @@ struct KeychainService {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: key,
-            kSecAttrAccessGroup as String: accessGroup,
         ]
 
         // Delete existing
@@ -104,7 +98,6 @@ struct KeychainService {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: key,
-            kSecAttrAccessGroup as String: accessGroup,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
         ]

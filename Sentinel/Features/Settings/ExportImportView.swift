@@ -11,7 +11,6 @@ enum ExportImportMode {
 struct ExportImportView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Query private var credentials: [Credential]
     @Query private var totpAccounts: [TOTPAccount]
 
     let mode: ExportImportMode
@@ -62,7 +61,7 @@ struct ExportImportView: View {
                     if isProcessing {
                         ProgressView()
                     } else {
-                        Text("Export \(credentials.count) credentials, \(totpAccounts.count) codes")
+                        Text("Export \(totpAccounts.count) codes")
                     }
                 }
                 .disabled(password.isEmpty || password != confirmPassword || isProcessing)
@@ -131,7 +130,6 @@ struct ExportImportView: View {
 
         do {
             let data = try ExportImportService.exportBackup(
-                credentials: credentials,
                 totpAccounts: totpAccounts,
                 exportPassword: password
             )
@@ -165,12 +163,12 @@ struct ExportImportView: View {
             defer { if accessing { url.stopAccessingSecurityScopedResource() } }
 
             let data = try Data(contentsOf: url)
-            let counts = try ExportImportService.importBackup(
+            let count = try ExportImportService.importBackup(
                 data: data,
                 exportPassword: password,
                 context: modelContext
             )
-            successMessage = "Imported \(counts.credentials) credentials and \(counts.totpAccounts) codes"
+            successMessage = "Imported \(count) codes"
         } catch {
             errorMessage = "Import failed: \(error.localizedDescription)"
         }

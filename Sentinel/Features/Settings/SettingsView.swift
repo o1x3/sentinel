@@ -7,90 +7,97 @@ struct SettingsView: View {
     @State private var showingImport = false
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section("Security") {
-                    if BiometricManager.canUseBiometrics() {
-                        Toggle(biometricLabel, isOn: Binding(
-                            get: { viewModel.biometricEnabled },
-                            set: { enabled in
-                                if enabled, let key = appState.cryptoKey {
-                                    viewModel.enableBiometric(key: key)
-                                } else {
-                                    viewModel.disableBiometric()
-                                }
+        Form {
+            Section("Appearance") {
+                Picker("Theme", selection: $viewModel.appearanceMode) {
+                    ForEach(AppearanceMode.allCases, id: \.self) { mode in
+                        Text(mode.label).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+
+            Section("Security") {
+                if BiometricManager.canUseBiometrics() {
+                    Toggle(biometricLabel, isOn: Binding(
+                        get: { viewModel.biometricEnabled },
+                        set: { enabled in
+                            if enabled, let key = appState.cryptoKey {
+                                viewModel.enableBiometric(key: key)
+                            } else {
+                                viewModel.disableBiometric()
                             }
-                        ))
-                    }
-
-                    HStack {
-                        Text("Auto-Lock")
-                        Spacer()
-                        Picker("", selection: $viewModel.autoLockTimeoutMinutes) {
-                            Text("1 min").tag(1.0)
-                            Text("5 min").tag(5.0)
-                            Text("15 min").tag(15.0)
-                            Text("30 min").tag(30.0)
                         }
-                        .pickerStyle(.menu)
-                    }
+                    ))
                 }
 
-                Section("Data") {
-                    Button {
-                        showingExport = true
-                    } label: {
-                        Label("Export Encrypted Backup", systemImage: "square.and.arrow.up")
+                HStack {
+                    Text("Auto-Lock")
+                    Spacer()
+                    Picker("", selection: $viewModel.autoLockTimeoutMinutes) {
+                        Text("1 min").tag(1.0)
+                        Text("5 min").tag(5.0)
+                        Text("15 min").tag(15.0)
+                        Text("30 min").tag(30.0)
                     }
+                    .pickerStyle(.menu)
+                }
+            }
 
-                    Button {
-                        showingImport = true
-                    } label: {
-                        Label("Import Backup", systemImage: "square.and.arrow.down")
-                    }
+            Section("Data") {
+                Button {
+                    showingExport = true
+                } label: {
+                    Label("Export Encrypted Backup", systemImage: "square.and.arrow.up")
                 }
 
-                Section("About") {
-                    HStack {
-                        Text("Version")
-                        Spacer()
-                        Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
-                            .foregroundStyle(.secondary)
-                    }
-                    HStack {
-                        Text("Build")
-                        Spacer()
-                        Text(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1")
-                            .foregroundStyle(.secondary)
-                    }
+                Button {
+                    showingImport = true
+                } label: {
+                    Label("Import Backup", systemImage: "square.and.arrow.down")
                 }
+            }
 
+            Section("About") {
+                HStack {
+                    Text("Version")
+                    Spacer()
+                    Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
+                        .foregroundStyle(.secondary)
+                }
+                HStack {
+                    Text("Build")
+                    Spacer()
+                    Text(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1")
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Section {
+                Button(role: .destructive) {
+                    appState.lock()
+                } label: {
+                    Label("Lock Now", systemImage: "lock.fill")
+                }
+            }
+
+            if let error = viewModel.errorMessage {
                 Section {
-                    Button(role: .destructive) {
-                        appState.lock()
-                    } label: {
-                        Label("Lock Now", systemImage: "lock.fill")
-                    }
-                }
-
-                if let error = viewModel.errorMessage {
-                    Section {
-                        Text(error).foregroundStyle(Color.theme.danger)
-                    }
-                }
-                if let success = viewModel.successMessage {
-                    Section {
-                        Text(success).foregroundStyle(Color.theme.success)
-                    }
+                    Text(error).foregroundStyle(Color.theme.danger)
                 }
             }
-            .navigationTitle("Settings")
-            .sheet(isPresented: $showingExport) {
-                ExportImportView(mode: .export)
+            if let success = viewModel.successMessage {
+                Section {
+                    Text(success).foregroundStyle(Color.theme.success)
+                }
             }
-            .sheet(isPresented: $showingImport) {
-                ExportImportView(mode: .import_)
-            }
+        }
+        .navigationTitle("Settings")
+        .sheet(isPresented: $showingExport) {
+            ExportImportView(mode: .export)
+        }
+        .sheet(isPresented: $showingImport) {
+            ExportImportView(mode: .import_)
         }
     }
 

@@ -18,7 +18,6 @@ final class TOTPAccount {
     var period: Int
     var iconName: String?
     var color: String?
-    var linkedCredentialId: UUID?
     var isFavorite: Bool
     var position: Int
     var createdAt: Date
@@ -36,7 +35,6 @@ final class TOTPAccount {
         period: Int = 30,
         iconName: String? = nil,
         color: String? = nil,
-        linkedCredentialId: UUID? = nil,
         isFavorite: Bool = false,
         position: Int = 0,
         createdAt: Date = Date(),
@@ -51,7 +49,6 @@ final class TOTPAccount {
         self.period = period
         self.iconName = iconName
         self.color = color
-        self.linkedCredentialId = linkedCredentialId
         self.isFavorite = isFavorite
         self.position = position
         self.createdAt = createdAt

@@ -7,10 +7,11 @@ struct ExportImportService {
     struct BackupData: Codable {
         let version: Int
         let exportedAt: Date
-        let credentials: [CredentialBackup]
+        let credentials: [CredentialBackup]?
         let totpAccounts: [TOTPAccountBackup]
     }
 
+    /// Kept for backward-compatible decoding of old backup files.
     struct CredentialBackup: Codable {
         let id: UUID
         let name: String
@@ -39,22 +40,11 @@ struct ExportImportService {
         let updatedAt: Date
     }
 
-    /// Export all data, then encrypt the JSON with a separate export password.
+    /// Export TOTP data, then encrypt the JSON with a separate export password.
     static func exportBackup(
-        credentials: [Credential],
         totpAccounts: [TOTPAccount],
         exportPassword: String
     ) throws -> Data {
-        let credentialBackups = credentials.map { c in
-            CredentialBackup(
-                id: c.id, name: c.name, urls: c.urls, username: c.username,
-                encryptedPassword: c.encryptedPassword, encryptedNotes: c.encryptedNotes,
-                customFieldsData: c.customFieldsData, category: c.category,
-                tags: c.tags, isFavorite: c.isFavorite,
-                createdAt: c.createdAt, updatedAt: c.updatedAt
-            )
-        }
-
         let totpBackups = totpAccounts.map { t in
             TOTPAccountBackup(
                 id: t.id, issuer: t.issuer, label: t.label,
@@ -67,7 +57,7 @@ struct ExportImportService {
         let backup = BackupData(
             version: 1,
             exportedAt: Date(),
-            credentials: credentialBackups,
+            credentials: nil,
             totpAccounts: totpBackups
         )
 
@@ -87,7 +77,7 @@ struct ExportImportService {
         data: Data,
         exportPassword: String,
         context: ModelContext
-    ) throws -> (credentials: Int, totpAccounts: Int) {
+    ) throws -> Int {
         guard data.count > 32 else {
             throw ExportImportError.invalidFile
         }
@@ -98,17 +88,6 @@ struct ExportImportService {
         let key = VaultCrypto.deriveKey(password: exportPassword, salt: Data(salt), iterations: 100_000)
         let json = try VaultCrypto.decrypt(Data(encrypted), using: key)
         let backup = try JSONDecoder().decode(BackupData.self, from: json)
-
-        for cb in backup.credentials {
-            let credential = Credential(
-                id: cb.id, name: cb.name, urls: cb.urls, username: cb.username,
-                encryptedPassword: cb.encryptedPassword, encryptedNotes: cb.encryptedNotes,
-                category: cb.category, tags: cb.tags, isFavorite: cb.isFavorite,
-                createdAt: cb.createdAt, updatedAt: cb.updatedAt
-            )
-            credential.customFieldsData = cb.customFieldsData
-            context.insert(credential)
-        }
 
         for tb in backup.totpAccounts {
             let account = TOTPAccount(
@@ -122,7 +101,7 @@ struct ExportImportService {
             context.insert(account)
         }
 
-        return (backup.credentials.count, backup.totpAccounts.count)
+        return backup.totpAccounts.count
     }
 }
 

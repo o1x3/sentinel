@@ -20,6 +20,13 @@ struct TOTPListView: View {
             }
             .navigationTitle("Codes")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink {
+                        SettingsView()
+                    } label: {
+                        Image(systemName: "gearshape")
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         showingAdd = true

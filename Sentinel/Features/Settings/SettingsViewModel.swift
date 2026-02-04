@@ -2,8 +2,32 @@ import CryptoKit
 import Foundation
 import Observation
 
+enum AppearanceMode: String, CaseIterable {
+    case system
+    case light
+    case dark
+
+    var label: String {
+        switch self {
+        case .system: "System"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
+}
+
 @Observable
 final class SettingsViewModel {
+    var appearanceMode: AppearanceMode {
+        get {
+            let raw = UserDefaults.standard.string(forKey: "appearanceMode") ?? "system"
+            return AppearanceMode(rawValue: raw) ?? .system
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: "appearanceMode")
+        }
+    }
+
     var biometricEnabled: Bool {
         get { UserDefaults.standard.bool(forKey: "biometricEnabled") }
         set { UserDefaults.standard.set(newValue, forKey: "biometricEnabled") }

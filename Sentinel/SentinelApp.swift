@@ -5,10 +5,18 @@ import SwiftUI
 struct SentinelApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @State private var appState = AppState()
+    @AppStorage("appearanceMode") private var appearanceMode: String = "system"
+
+    private var resolvedColorScheme: ColorScheme? {
+        switch appearanceMode {
+        case "light": .light
+        case "dark": .dark
+        default: nil
+        }
+    }
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Credential.self,
             TOTPAccount.self,
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
@@ -28,7 +36,7 @@ struct SentinelApp: App {
                     } else if !appState.isUnlocked {
                         LockView()
                     } else {
-                        MainTabView()
+                        TOTPListView()
                     }
                 }
                 .environment(appState)
@@ -44,6 +52,7 @@ struct SentinelApp: App {
                         .transition(.opacity)
                 }
             }
+            .preferredColorScheme(resolvedColorScheme)
             .animation(.easeInOut(duration: 0.2), value: appState.isObscured)
         }
         .modelContainer(sharedModelContainer)

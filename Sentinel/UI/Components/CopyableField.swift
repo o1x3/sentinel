@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 struct CopyableField: View {
     let label: String
@@ -50,20 +49,11 @@ struct CopyableField: View {
     }
 
     private func copyToClipboard() {
-        UIPasteboard.general.string = value
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        ClipboardService.copy(value)
 
         withAnimation { showCopied = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             withAnimation { showCopied = false }
-        }
-
-        // Clear clipboard after 30 seconds
-        let currentValue = value
-        DispatchQueue.main.asyncAfter(deadline: .now() + 30) {
-            if UIPasteboard.general.string == currentValue {
-                UIPasteboard.general.string = ""
-            }
         }
     }
 }

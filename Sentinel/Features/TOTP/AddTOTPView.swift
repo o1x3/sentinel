@@ -5,6 +5,7 @@ struct AddTOTPView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(AppState.self) private var appState
+    @Query private var existingAccounts: [TOTPAccount]
     @State private var viewModel = AddTOTPViewModel()
     @State private var showingScanner = false
     @State private var activeTab = 0
@@ -102,6 +103,7 @@ struct AddTOTPView: View {
     private func save() {
         guard let key = appState.cryptoKey,
               let account = viewModel.createAccount(using: key) else { return }
+        account.position = (existingAccounts.map(\.position).max() ?? -1) + 1
         modelContext.insert(account)
         dismiss()
     }

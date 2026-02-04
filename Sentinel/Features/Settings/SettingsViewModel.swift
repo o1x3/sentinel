@@ -43,6 +43,17 @@ final class SettingsViewModel {
         }
     }
 
+    var clipboardClearSeconds: Int {
+        get {
+            UserDefaults.standard.object(forKey: "clipboardClearSeconds") != nil
+                ? UserDefaults.standard.integer(forKey: "clipboardClearSeconds")
+                : 30
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "clipboardClearSeconds")
+        }
+    }
+
     var errorMessage: String?
     var successMessage: String?
 

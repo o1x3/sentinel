@@ -42,6 +42,18 @@ struct SettingsView: View {
                     }
                     .pickerStyle(.menu)
                 }
+
+                HStack {
+                    Text("Clear Clipboard")
+                    Spacer()
+                    Picker("", selection: $viewModel.clipboardClearSeconds) {
+                        Text("15 seconds").tag(15)
+                        Text("30 seconds").tag(30)
+                        Text("60 seconds").tag(60)
+                        Text("Never").tag(0)
+                    }
+                    .pickerStyle(.menu)
+                }
             }
 
             Section("Data") {

@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 struct GeneratorView: View {
     @Environment(\.dismiss) private var dismiss
@@ -55,8 +54,7 @@ struct GeneratorView: View {
 
                 HStack(spacing: 12) {
                     Button {
-                        UIPasteboard.general.string = viewModel.generatedPassword
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        ClipboardService.copy(viewModel.generatedPassword)
                     } label: {
                         Label("Copy", systemImage: "doc.on.doc")
                     }

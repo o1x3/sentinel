@@ -36,6 +36,8 @@ struct ExportImportService {
         let digits: Int
         let period: Int
         let isFavorite: Bool
+        let position: Int?
+        let color: String?
         let createdAt: Date
         let updatedAt: Date
     }
@@ -50,6 +52,7 @@ struct ExportImportService {
                 id: t.id, issuer: t.issuer, label: t.label,
                 encryptedSecret: t.encryptedSecret, algorithm: t.algorithm.rawValue,
                 digits: t.digits, period: t.period, isFavorite: t.isFavorite,
+                position: t.position, color: t.color,
                 createdAt: t.createdAt, updatedAt: t.updatedAt
             )
         }
@@ -89,13 +92,15 @@ struct ExportImportService {
         let json = try VaultCrypto.decrypt(Data(encrypted), using: key)
         let backup = try JSONDecoder().decode(BackupData.self, from: json)
 
-        for tb in backup.totpAccounts {
+        for (index, tb) in backup.totpAccounts.enumerated() {
             let account = TOTPAccount(
                 id: tb.id, issuer: tb.issuer, label: tb.label,
                 encryptedSecret: tb.encryptedSecret,
                 algorithm: TOTPAlgorithm(rawValue: tb.algorithm) ?? .sha1,
                 digits: tb.digits, period: tb.period,
+                color: tb.color,
                 isFavorite: tb.isFavorite,
+                position: tb.position ?? index,
                 createdAt: tb.createdAt, updatedAt: tb.updatedAt
             )
             context.insert(account)

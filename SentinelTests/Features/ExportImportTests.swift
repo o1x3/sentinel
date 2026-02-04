@@ -7,24 +7,16 @@ import Foundation
 struct ExportImportTests {
 
     @Test func roundTripExportImport() throws {
-        // Create test data
         let key = SymmetricKey(size: .bits256)
-        let credential = Credential(name: "GitHub", urls: ["https://github.com"], username: "user")
-        try VaultService.encryptCredential(
-            credential,
-            password: "secret123",
-            notes: "My notes",
-            customFields: [],
-            using: key
-        )
 
-        let totp = TOTPAccount(issuer: "GitHub", label: "user@github.com")
+        let totp = TOTPAccount(
+            issuer: "GitHub", label: "user@github.com",
+            color: "purple", isFavorite: true, position: 5
+        )
         try VaultService.encryptTOTPSecret(totp, secret: "JBSWY3DPEHPK3PXP", using: key)
 
-        // Export
         let exportPassword = "backup-password"
         let exported = try ExportImportService.exportBackup(
-            credentials: [credential],
             totpAccounts: [totp],
             exportPassword: exportPassword
         )
@@ -33,31 +25,39 @@ struct ExportImportTests {
 
         // Import into fresh context
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: Credential.self, TOTPAccount.self, configurations: config)
+        let container = try ModelContainer(for: TOTPAccount.self, configurations: config)
         let context = ModelContext(container)
 
-        let counts = try ExportImportService.importBackup(
+        let count = try ExportImportService.importBackup(
             data: exported,
             exportPassword: exportPassword,
             context: context
         )
 
-        #expect(counts.credentials == 1)
-        #expect(counts.totpAccounts == 1)
+        #expect(count == 1)
+
+        // Verify imported data preserves position, color, favorite
+        let descriptor = FetchDescriptor<TOTPAccount>()
+        let imported = try context.fetch(descriptor)
+        #expect(imported.count == 1)
+        #expect(imported[0].issuer == "GitHub")
+        #expect(imported[0].color == "purple")
+        #expect(imported[0].isFavorite == true)
+        #expect(imported[0].position == 5)
     }
 
     @Test func wrongPasswordFailsImport() throws {
         let key = SymmetricKey(size: .bits256)
-        let credential = Credential(name: "Test")
+        let totp = TOTPAccount(issuer: "Test", label: "test")
+        try VaultService.encryptTOTPSecret(totp, secret: "JBSWY3DPEHPK3PXP", using: key)
 
         let exported = try ExportImportService.exportBackup(
-            credentials: [credential],
-            totpAccounts: [],
+            totpAccounts: [totp],
             exportPassword: "correct-password"
         )
 
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: Credential.self, TOTPAccount.self, configurations: config)
+        let container = try ModelContainer(for: TOTPAccount.self, configurations: config)
         let context = ModelContext(container)
 
         #expect(throws: (any Error).self) {

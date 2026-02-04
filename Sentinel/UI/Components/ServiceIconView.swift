@@ -3,10 +3,17 @@ import SwiftUI
 struct ServiceIconView: View {
     let name: String
     let size: CGFloat
+    let colorOverride: String?
 
-    init(name: String, size: CGFloat = 40) {
+    static let colorMap: [String: Color] = [
+        "blue": .blue, "purple": .purple, "orange": .orange, "green": .green,
+        "pink": .pink, "teal": .teal, "indigo": .indigo, "mint": .mint,
+    ]
+
+    init(name: String, size: CGFloat = 40, colorOverride: String? = nil) {
         self.name = name
         self.size = size
+        self.colorOverride = colorOverride
     }
 
     private var initial: String {
@@ -14,6 +21,9 @@ struct ServiceIconView: View {
     }
 
     private var backgroundColor: Color {
+        if let override = colorOverride, let color = Self.colorMap[override] {
+            return color
+        }
         // Deterministic color from name hash
         let hash = abs(name.hashValue)
         let colors: [Color] = [.blue, .purple, .orange, .green, .pink, .teal, .indigo, .mint]
